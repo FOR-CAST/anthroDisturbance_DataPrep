@@ -127,8 +127,13 @@ createDisturbanceList <- function(DT,
               }
             }
             # Save the layer if doesn't exist
-            terra::writeVector(lay, filename = fullFlName,
-                               filetype = "ESRI Shapefile")
+            if (inherits(lay, "SpatVector") && terra::nrow(lay) == 0L) {
+              message("Skipping write: empty SpatVector (", paste(DN, DC, CTS, sep = "/"), ")")
+            } else {
+              terra::writeVector(lay,
+                                 filename = fullFlName,
+                                 filetype = "ESRI Shapefile")
+            }
           } else {
             # Load the layer if exists
             message(paste0(flName, " exists, returning..."))
