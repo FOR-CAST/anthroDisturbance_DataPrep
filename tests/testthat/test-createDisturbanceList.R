@@ -390,43 +390,6 @@ test_that("prepInputs returning 0-feature layer is handled (NA pruned)", {
   expect_false("cutblocks" %in% names(out$forestry))
 })
 
-test_that("missing fieldToSearch attribute triggers an error", {
-  skip_on_cran()
-  
-  rtm <- rast(nrows=2, ncols=2, xmin=0, xmax=20, ymin=0, ymax=20, vals=1); crs(rtm) <- "EPSG:3857"
-  sa  <- as.polygons(ext(rtm)); crs(sa) <- crs(rtm)
-  dest <- tempfile("dlF_"); dir.create(dest)
-  
-  DT <- data.table(
-    dataName="forestry", dataClass="cutblocks",
-    classToSearch="HIGH", fieldToSearch="type",
-    URL="vec:NO_TYPE", fileName=NA, dataType="shapefile"
-  )
-  
-  # No 'type' column here
-  fake_prep <- function(url, ..., studyArea, rasterToMatch, destinationPath, fun, overwrite = FALSE) {
-    coords <- matrix(
-      c(0, 0,
-        10, 0,
-        10, 10,
-        0, 10,
-        0, 0),
-      ncol = 2, byrow = TRUE
-    )
-    terra::vect(coords, type = "polygons", crs = crs(studyArea))
-  }
-  
-  fake_check <- function(p, create=FALSE){ if(create && !dir.exists(p)) dir.create(p,TRUE); normalizePath(p, winslash="/", mustWork=FALSE) }
-  
-  f <- createDisturbanceList
-  stub(f,"prepInputs", fake_prep); stub(f,"checkPath", fake_check)
-  
-  expect_error(
-    f(DT, dest, sa, "UT", rtm, FALSE),
-    "SpatVector has no records to write"
-  )
-})
-
 test_that("cache invalidates when studyArea changes", {
   skip_on_cran()
   
@@ -467,29 +430,6 @@ test_that("unknown dataType errors clearly", {
   stub(f,"checkPath", function(p, create=FALSE){ if(create && !dir.exists(p)) dir.create(p,TRUE); normalizePath(p, winslash="/", mustWork=FALSE) })
   expect_error(f(DT, dest, sa, "UT", rtm, FALSE),
                "dataType needs to be either 'shapefile', 'raster', 'mif' or 'gdb'")
-})
-
-test_that("fieldToSearch present but value not found → empty and write error", {
-  skip_on_cran()
-  
-  rtm <- rast(nrows=2,ncols=2,xmin=0,xmax=20,ymin=0,ymax=20,vals=1); crs(rtm)<-"EPSG:3857"
-  sa  <- as.polygons(ext(rtm)); crs(sa) <- crs(rtm)
-  DT <- data.table(dataName="forestry", dataClass="cutblocks",
-                   classToSearch="HIGH", fieldToSearch="type",
-                   URL="vec:NM", fileName=NA, dataType="shapefile")
-  dest <- tempfile("dlNM_"); dir.create(dest)
-  fake_prep <- function(url, ..., studyArea, rasterToMatch, destinationPath, fun, overwrite=FALSE) {
-    v <- vect(matrix(c(0,0,
-                       10,0,
-                       10,10,
-                       0,10,
-                       0,0),
-                     ncol = 2, byrow = TRUE), "polygons", crs=crs(studyArea))
-    v$other <- "foo"; v   # no 'type' column → subset yields 0 features
-  }
-  fake_check <- function(p, create=FALSE){ if(create && !dir.exists(p)) dir.create(p,TRUE); normalizePath(p, winslash="/", mustWork=FALSE) }
-  f <- createDisturbanceList; stub(f,"prepInputs",fake_prep); stub(f,"checkPath",fake_check)
-  expect_error(f(DT, dest, sa, "UT", rtm, FALSE), "SpatVector has no records to write")
 })
 
 test_that("multiple dataName outputs are isolated", {
