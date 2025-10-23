@@ -246,8 +246,19 @@ test_that("combine occurs within same CTS (rbind success)", {
     URL=c("vec:H1","vec:H2"), fileName=NA, dataType="shapefile"
   )
   
-  mk <- function(x,y,s,lab) { v <- vect(matrix(c(x,y, x+s,y, x+s,y+s, x,y+s, x,y),2,byrow=TRUE),
-                                        type="polygons", crs=crs(sa)); v$type <- lab; v }
+  mk <- function(x, y, s, lab) {
+    coords <- matrix(
+      c(x, y,
+        x+s, y,
+        x+s, y+s,
+        x, y+s,
+        x, y),
+      ncol = 2, byrow = TRUE
+    )
+    v <- vect(coords, type = "polygons", crs = crs(sa))
+    v$type <- lab
+    v
+  }
   
   fake_prep <- function(url, ..., studyArea, rasterToMatch, destinationPath, fun, overwrite=FALSE) {
     if (url=="vec:H1") return(mk(0,0,10,"HIGH"))
@@ -393,9 +404,18 @@ test_that("missing fieldToSearch attribute triggers an error", {
   )
   
   # No 'type' column here
-  fake_prep <- function(url, ..., studyArea, rasterToMatch, destinationPath, fun, overwrite=FALSE) {
-    vect(matrix(c(0,0, 10,0, 10,10, 0,10, 0,0),2,byrow=TRUE), type="polygons", crs=crs(studyArea))
+  fake_prep <- function(url, ..., studyArea, rasterToMatch, destinationPath, fun, overwrite = FALSE) {
+    coords <- matrix(
+      c(0, 0,
+        10, 0,
+        10, 10,
+        0, 10,
+        0, 0),
+      ncol = 2, byrow = TRUE
+    )
+    terra::vect(coords, type = "polygons", crs = crs(studyArea))
   }
+  
   fake_check <- function(p, create=FALSE){ if(create && !dir.exists(p)) dir.create(p,TRUE); normalizePath(p, winslash="/", mustWork=FALSE) }
   
   f <- createDisturbanceList
@@ -419,7 +439,14 @@ test_that("cache invalidates when studyArea changes", {
   calls <- new.env(); calls$n <- 0L
   fake_prep <- function(url, ..., studyArea, rasterToMatch, destinationPath, fun, overwrite=FALSE) {
     calls$n <- calls$n + 1L
-    v <- vect(matrix(c(0,0,10,0,10,10,0,10,0,0),2,byrow=TRUE), "polygons", crs=crs(studyArea))
+    v <- vect(
+      matrix(
+        c(0,0,
+          10,0,
+          10,10,
+          0,10,
+          0,0),
+        ncol=2,byrow=TRUE), "polygons", crs=crs(studyArea))
     v$type <- "HIGH"; v
   }
   fake_check <- function(p, create=FALSE){ if(create && !dir.exists(p)) dir.create(p,TRUE); normalizePath(p, winslash="/", mustWork=FALSE) }
@@ -452,7 +479,12 @@ test_that("fieldToSearch present but value not found → empty and write error",
                    URL="vec:NM", fileName=NA, dataType="shapefile")
   dest <- tempfile("dlNM_"); dir.create(dest)
   fake_prep <- function(url, ..., studyArea, rasterToMatch, destinationPath, fun, overwrite=FALSE) {
-    v <- vect(matrix(c(0,0,10,0,10,10,0,10,0,0),2,byrow=TRUE), "polygons", crs=crs(studyArea))
+    v <- vect(matrix(c(0,0,
+                       10,0,
+                       10,10,
+                       0,10,
+                       0,0),
+                     ncol = 2, byrow = TRUE), "polygons", crs=crs(studyArea))
     v$other <- "foo"; v   # no 'type' column → subset yields 0 features
   }
   fake_check <- function(p, create=FALSE){ if(create && !dir.exists(p)) dir.create(p,TRUE); normalizePath(p, winslash="/", mustWork=FALSE) }
@@ -475,7 +507,12 @@ test_that("multiple dataName outputs are isolated", {
   )
   dest <- tempfile("dlMN_"); dir.create(dest)
   fake_prep <- function(url, ..., studyArea, rasterToMatch, destinationPath, fun, overwrite=FALSE) {
-    v <- vect(matrix(c(0,0,10,0,10,10,0,10,0,0),2,byrow=TRUE), "polygons", crs=crs(studyArea))
+    v <- vect(matrix(c(0,0,
+                       10,0,
+                       10,10,
+                       0,10,
+                       0,0),
+                     ncol = 2, byrow = TRUE), "polygons", crs=crs(studyArea))
     v$type <- if (url=="vec:F") "F" else "M"; v
   }
   fake_check <- function(p, create=FALSE){ if(create && !dir.exists(p)) dir.create(p,TRUE); normalizePath(p, winslash="/", mustWork=FALSE) }
