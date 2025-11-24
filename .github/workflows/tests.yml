@@ -50,16 +50,9 @@ jobs:
       - name: Pre-install Require (vanilla)
         run: |
           Rscript --vanilla - <<'RS'
-          options(repos = c(
-            PE = "https://predictive-ecology.r-universe.dev",
-            CRAN = "https://cloud.r-project.org"
-          ))
-          if (!requireNamespace("Require", quietly = TRUE)) {
-            install.packages("Require", repos = "https://predictive-ecology.r-universe.dev", type = "source", dependencies = TRUE)
-          }
-          if (!requireNamespace("Require", quietly = TRUE)) {
-            quit(status = 1)
-          }
+          options(repos = c(CRAN = "https://cloud.r-project.org"))
+          if (!requireNamespace("Require", quietly = TRUE)) install.packages("Require")
+          if (!requireNamespace("Require", quietly = TRUE)) quit(status = 1)
           RS
 
       - name: Install light dependencies
@@ -83,16 +76,9 @@ jobs:
       - name: Ensure Require present
         run: |
           Rscript - <<'RS'
-          options(repos = c(
-            PE = "https://predictive-ecology.r-universe.dev",
-            CRAN = "https://cloud.r-project.org"
-          ))
-          if (!requireNamespace("Require", quietly = TRUE)) {
-            install.packages("Require", repos = "https://predictive-ecology.r-universe.dev", type = "source", dependencies = TRUE)
-          }
-          if (!requireNamespace("Require", quietly = TRUE)) {
-            quit(status = 1)
-          }
+          options(repos = c(CRAN = "https://cloud.r-project.org"))
+          if (!requireNamespace("Require", quietly = TRUE)) install.packages("Require")
+          if (!requireNamespace("Require", quietly = TRUE)) quit(status = 1)
           RS
 
       - name: Run tests and coverage
