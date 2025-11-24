@@ -99,7 +99,7 @@ jobs:
           heavy_tests <- strsplit(Sys.getenv("HEAVY_TESTS", ""), ",", fixed = TRUE)[[1]]
           heavy_tests <- trimws(heavy_tests[heavy_tests != ""])
 
-          report_dir <- file.path("artifacts", "tests", mode)
+          report_dir <- normalizePath(file.path("artifacts", "tests", mode), mustWork = FALSE)
           dir.create(report_dir, recursive = TRUE, showWarnings = FALSE)
 
           test_dir <- file.path("tests", "testthat")
@@ -123,6 +123,10 @@ jobs:
           junit_path <- file.path(report_dir, "tests.xml")
           sink(log_path, split = TRUE)
           on.exit({ while (sink.number() > 0) sink() }, add = TRUE)
+
+          if (!exists(".robustDigest", inherits = FALSE)) {
+            assign(".robustDigest", digest::digest, envir = .GlobalEnv)
+          }
 
           reporter <- testthat::MultiReporter$new(list(
             testthat::SummaryReporter$new(),
