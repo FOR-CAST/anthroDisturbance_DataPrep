@@ -39,7 +39,7 @@ checkDisturbanceProportions <- function(DT,
                       rasterToMatch = rasterToMatch,
                       destinationPath = destinationPath, 
                       fun = "terra::vect", 
-                      overwrite = FALSE), dissolve = TRUE)
+                      overwrite = getOption("reproducible.overwrite", FALSE)), dissolve = TRUE)
     
     # 5. Buffer and calculate area disturbed
 

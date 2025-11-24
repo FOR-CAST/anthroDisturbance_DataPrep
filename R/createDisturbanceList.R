@@ -89,11 +89,11 @@ createDisturbanceList <- function(DT,
               
               TF <- if (!is.na(subDT[["fileName"]])) subDT[["fileName"]] else NULL
               AE <- if (subDT[["dataType"]] == "shapefile") "similar" else NULL
-              intDir <- checkPath(file.path(destinationPath, paste(DN, 
-                                                                   DC, 
-                                                                   CTS,
-                                                                   sep = "_")), 
-                                  create = TRUE)
+          intDir <- checkPath(file.path(destinationPath, paste(DN, 
+                                                                  DC, 
+                                                                  CTS,
+                                                                  sep = "_")), 
+                                 create = TRUE)
               lay <- prepInputs(url = subDT[["URL"]], 
                                 targetFile = TF, 
                                 alsoExtract = AE,
@@ -101,7 +101,52 @@ createDisturbanceList <- function(DT,
                                 rasterToMatch = rasterToMatch,
                                 destinationPath = intDir, 
                                 fun = FUN, 
-                                overwrite = FALSE)
+                                overwrite = getOption("reproducible.overwrite", FALSE))
+              # On some SpaDES runs prepInputs can incorrectly drop all features even when
+              # the source file overlaps the studyArea (e.g., forestry cutblocks). If that
+              # happens, try a lightweight manual crop/mask from the raw file before giving up.
+              if (inherits(lay, "SpatVector") && terra::nrow(lay) == 0) {
+                src_raw <- sub("^file://", "", utils::URLdecode(subDT[["URL"]]))
+                if (nzchar(src_raw) && file.exists(src_raw)) {
+                  recovered <- tryCatch({
+                    raw <- terra::vect(src_raw)
+                    tgt <- if (inherits(rasterToMatch, "SpatRaster")) rasterToMatch else NULL
+                    if (!is.null(tgt)) raw <- terra::project(raw, tgt)
+                    if (!is.null(studyArea)) {
+                      raw <- terra::crop(raw, studyArea)
+                      raw <- terra::mask(raw, studyArea)
+                    }
+                    raw
+                  }, error = function(...) NULL)
+                  if (inherits(recovered, "SpatVector") && terra::nrow(recovered) > 0) {
+                    lay <- recovered
+                    message(crayon::yellow(paste0(
+                      "Recovered ", terra::nrow(lay),
+                      " features after prepInputs returned empty for ",
+                      paste(DN, DC, CTS, sep = "/"), "."
+                    )))
+                  }
+                }
+              }
+              # Ensure shapefile sidecars exist when reproducible hardlinks only .shp
+              if (!is.null(TF) && endsWith(tolower(TF), ".shp")) {
+                shp_out <- list.files(intDir, pattern = paste0("^", gsub("([\\^\\$\\.\\|\\(\\)\\[\\]\\+\\?\\{\\}\\\\])", "\\\\\\1", basename(TF)), "$"),
+                                      full.names = TRUE)
+                sidecars <- c(".dbf", ".shx", ".prj", ".cpg")
+                if (!length(shp_out)) shp_out <- file.path(intDir, basename(TF))
+                stem_out <- tools::file_path_sans_ext(shp_out[1])
+                src_stem <- sub("^file://", "", utils::URLdecode(subDT[["URL"]]))
+                src_stem <- tools::file_path_sans_ext(src_stem)
+                for (ext in sidecars) {
+                  dst <- paste0(stem_out, ext)
+                  if (!file.exists(dst)) {
+                    src <- paste0(src_stem, ext)
+                    if (file.exists(src)) {
+                      file.copy(src, dst, overwrite = FALSE)
+                    }
+                  }
+                }
+              }
               
               if (length(lay) == 0){
                   message(crayon::red(paste0("There are no ", DC, 

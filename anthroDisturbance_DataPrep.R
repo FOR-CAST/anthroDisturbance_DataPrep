@@ -186,7 +186,7 @@ doEvent.anthroDisturbance_DataPrep = function(sim, eventTime, eventType) {
         sim$rasterToMatch <- terra::rast(sim$rasterToMatch)        
       }
       
-      if (class(sim$studyArea) != "SpatVector"){
+      if (!inherits(sim$studyArea, "SpatVector")){
         message(crayon::yellow("studyArea is not a SpatVector. Converting."))
         sim$studyArea <- terra::vect(sim$studyArea)
       }
