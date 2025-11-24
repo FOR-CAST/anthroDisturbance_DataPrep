@@ -73,6 +73,7 @@ jobs:
             any::Require
             any::fasterize
             any::xml2
+            any::digest
 
       - name: Ensure Require present
         run: |
@@ -93,6 +94,7 @@ jobs:
             library(testthat)
             library(covr)
             library(withr)
+            library(data.table)
           })
           mode <- Sys.getenv("MODE", "light")
           coverage_min <- as.numeric(Sys.getenv("COVERAGE_MIN", "0"))
