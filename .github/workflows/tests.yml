@@ -21,7 +21,6 @@ env:
   R_PROFILE: /dev/null
   R_ENVIRON_USER: /dev/null
   R_ENVIRON: /dev/null
-  R_LIBS_USER: ${{ runner.temp }}/Rlibs
 
 jobs:
   tests:
@@ -39,7 +38,9 @@ jobs:
           echo "MODE=$MODE" >> "$GITHUB_ENV"
 
       - name: Prepare R library path
-        run: mkdir -p "$R_LIBS_USER"
+        run: |
+          echo "R_LIBS_USER=$RUNNER_TEMP/Rlibs" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/Rlibs"
 
       - name: Pre-install Require (vanilla)
         run: |
