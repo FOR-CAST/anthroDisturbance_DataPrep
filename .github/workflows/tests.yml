@@ -95,6 +95,7 @@ jobs:
             library(covr)
             library(withr)
             library(data.table)
+            library(raster)
           })
           mode <- Sys.getenv("MODE", "light")
           coverage_min <- as.numeric(Sys.getenv("COVERAGE_MIN", "0"))
