@@ -94,24 +94,12 @@ jobs:
           mkdir -p artifacts/tests/"$MODE"
           Rscript - <<'RS'
           suppressPackageStartupMessages({
-            library(testthat)
-            library(covr)
-            library(withr)
-            library(data.table)
-            library(qs)
-            library(sf)
-            library(reproducible)
-            library(raster)
-            library(mockery)
-            library(Require)
-            library(fasterize)
-            library(xml2)
-            library(digest)
-            library(tictoc)
-            library(stringi)
-            library(crayon)
-            library(terra)
-            library(stub)
+            pkgs <- c(
+              "covr", "DT", "htmltools", "htmlwidgets", "testthat",
+              "terra", "data.table", "qs", "sf", "withr", "reproducible",
+              "raster", "tictoc", "mockery", "Require", "fasterize"
+            )
+            invisible(lapply(pkgs, library, character.only = TRUE))
           })
           mode <- Sys.getenv("MODE", "light")
           coverage_min <- as.numeric(Sys.getenv("COVERAGE_MIN", "0"))
