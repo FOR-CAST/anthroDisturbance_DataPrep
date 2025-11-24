@@ -127,12 +127,13 @@ jobs:
             testthat::SummaryReporter$new(),
             testthat::JunitReporter$new(file = junit_path)
           ))
-          testthat::test_files(
-            test_paths = test_files,
+          testthat::test_dir(
             test_dir = test_dir,
+            test_paths = test_files,
             reporter = reporter,
             stop_on_failure = TRUE,
-            stop_on_warning = FALSE
+            stop_on_warning = FALSE,
+            load_helpers = FALSE
           )
 
           cov <- covr::file_coverage(r_scripts, test_files)
