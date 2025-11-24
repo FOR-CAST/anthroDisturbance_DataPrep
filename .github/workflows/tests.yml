@@ -17,8 +17,10 @@ env:
   COVERAGE_MIN: 70
   HEAVY_TESTS: ""
   AGGREGATE_REPO: RonCatK/RonCatK-anthroDisturbance_Thesis
-  R_PROFILE_USER: ""
-  R_ENVIRON_USER: ""
+  R_PROFILE_USER: /dev/null
+  R_PROFILE: /dev/null
+  R_ENVIRON_USER: /dev/null
+  R_ENVIRON: /dev/null
   R_LIBS_USER: ${{ runner.temp }}/Rlibs
 
 jobs:
@@ -38,6 +40,21 @@ jobs:
 
       - name: Prepare R library path
         run: mkdir -p "$R_LIBS_USER"
+
+      - name: Pre-install Require (vanilla)
+        run: |
+          Rscript --vanilla - <<'RS'
+          options(repos = c(
+            PE = "https://predictive-ecology.r-universe.dev",
+            CRAN = "https://cloud.r-project.org"
+          ))
+          if (!requireNamespace("Require", quietly = TRUE)) {
+            install.packages("Require", repos = "https://predictive-ecology.r-universe.dev", type = "source", dependencies = TRUE)
+          }
+          if (!requireNamespace("Require", quietly = TRUE)) {
+            quit(status = 1)
+          }
+          RS
 
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
