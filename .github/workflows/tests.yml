@@ -59,14 +59,12 @@ jobs:
       - name: Ensure Require present
         run: |
           Rscript - <<'RS'
-          opts <- getOption("repos")
-          options(repos = c(CRAN = "https://cloud.r-project.org"))
-          if (!("Require" %in% rownames(installed.packages()))) {
-            try(install.packages("Require"), silent = TRUE)
-          }
-          if (!("Require" %in% rownames(installed.packages()))) {
-            install.packages("Require", repos = "https://predictive-ecology.r-universe.dev")
-          }
+          options(repos = c(
+            PE = "https://predictive-ecology.r-universe.dev",
+            CRAN = "https://cloud.r-project.org"
+          ))
+          install.packages("Require")
+          stopifnot("Require" %in% rownames(installed.packages()))
           RS
 
       - name: Run tests and coverage
