@@ -17,6 +17,9 @@ env:
   COVERAGE_MIN: 70
   HEAVY_TESTS: ""
   AGGREGATE_REPO: RonCatK/RonCatK-anthroDisturbance_Thesis
+  R_PROFILE_USER: ""
+  R_ENVIRON_USER: ""
+  R_LIBS_USER: ${{ runner.temp }}/Rlibs
 
 jobs:
   tests:
@@ -32,6 +35,9 @@ jobs:
           MODE="${{ github.event.inputs.mode || 'light' }}"
           [ -z "$MODE" ] && MODE="light"
           echo "MODE=$MODE" >> "$GITHUB_ENV"
+
+      - name: Prepare R library path
+        run: mkdir -p "$R_LIBS_USER"
 
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
