@@ -73,9 +73,9 @@ checkDisturbanceProportions <- function(DT,
     # rp3 <- predict(logo, rfm, fun=rfun)
     # parallel::stopCluster(cls)
     
-    tic(paste0("Time elapsed for buffering ", layName, ":"))
+    tictoc::tic(paste0("Time elapsed for buffering ", layName, ":"))
     bLay <- terra::buffer(lay, width = 500)
-    toc()
+    tictoc::tictoc()
     terra::writeVector(bLay, filename = flNm,
                        filetype = "ESRI Shapefile", overwrite = TRUE)
     } else {

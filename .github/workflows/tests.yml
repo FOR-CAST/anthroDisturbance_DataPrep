@@ -68,12 +68,15 @@ jobs:
             any::sf
             any::reproducible
             any::raster
-            any::tictoc
             any::mockery
             any::Require
             any::fasterize
             any::xml2
             any::digest
+            any::tictoc
+            any::DT
+            any::htmltools
+            any::htmlwidgets
 
       - name: Ensure Require present
         run: |
