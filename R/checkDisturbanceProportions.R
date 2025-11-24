@@ -75,7 +75,7 @@ checkDisturbanceProportions <- function(DT,
     
     tictoc::tic(paste0("Time elapsed for buffering ", layName, ":"))
     bLay <- terra::buffer(lay, width = 500)
-    tictoc::tictoc()
+    tictoc::toc()
     terra::writeVector(bLay, filename = flNm,
                        filetype = "ESRI Shapefile", overwrite = TRUE)
     } else {
