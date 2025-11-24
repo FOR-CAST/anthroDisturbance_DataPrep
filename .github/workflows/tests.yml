@@ -63,8 +63,12 @@ jobs:
             PE = "https://predictive-ecology.r-universe.dev",
             CRAN = "https://cloud.r-project.org"
           ))
-          install.packages("Require")
-          stopifnot("Require" %in% rownames(installed.packages()))
+          if (!requireNamespace("Require", quietly = TRUE)) {
+            install.packages("Require", repos = "https://predictive-ecology.r-universe.dev", type = "source", dependencies = TRUE)
+          }
+          if (!requireNamespace("Require", quietly = TRUE)) {
+            quit(status = 1)
+          }
           RS
 
       - name: Run tests and coverage
