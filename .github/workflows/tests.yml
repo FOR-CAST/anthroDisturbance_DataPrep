@@ -127,14 +127,14 @@ jobs:
             testthat::SummaryReporter$new(),
             testthat::JunitReporter$new(file = junit_path)
           ))
-          testthat::test_dir(
-            test_dir = test_dir,
-            test_paths = test_files,
-            reporter = reporter,
-            stop_on_failure = TRUE,
-            stop_on_warning = FALSE,
-            load_helpers = FALSE
-          )
+          for (tf in test_files) {
+            testthat::test_file(
+              tf,
+              reporter = reporter,
+              stop_on_failure = TRUE,
+              stop_on_warning = FALSE
+            )
+          }
 
           cov <- covr::file_coverage(r_scripts, test_files)
           cov_pct <- covr::percent_coverage(cov)
