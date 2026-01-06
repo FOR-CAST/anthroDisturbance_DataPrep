@@ -32,3 +32,4 @@ cov <- file_coverage(source_files = src, test_files = tst)
 percent_coverage(cov)
 covr::report(cov, file = "coverage.html", browse = interactive())
 
+
