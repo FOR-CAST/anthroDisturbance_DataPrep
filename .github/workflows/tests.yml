@@ -78,7 +78,7 @@ jobs:
             "Require", "fasterize", "xml2", "digest", "tictoc",
             "DT", "htmltools", "htmlwidgets", "BH", "RApiSerialize",
             "Rcpp", "RcppParallel", "stringfish", "stringi",
-            "googledrive", "rlang", "vctrs", "pillar", "purrr", "tibble"
+            "zip", "googledrive", "rlang", "vctrs", "pillar", "purrr", "tibble"
           )
           missing <- cran_packages[!vapply(cran_packages, requireNamespace, logical(1), quietly = TRUE)]
           if (length(missing)) install.packages(missing)
