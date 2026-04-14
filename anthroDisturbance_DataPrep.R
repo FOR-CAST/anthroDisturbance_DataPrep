@@ -21,12 +21,12 @@ defineModule(sim, list(
                                 comment = NULL)), 
                       class = "person"),
   childModules = character(0),
-  version = list(anthroDisturbance_DataPrep = "1.1.0"),
+  version = list(anthroDisturbance_DataPrep = "1.0.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.md", "anthroDisturbance_DataPrep.Rmd"), ## same file
-  reqdPkgs = list("SpaDES.core (>= 2.1.5.9003)", "ggplot2", "googledrive",
+  reqdPkgs = list("SpaDES.core (>=2.0.3.9002)", "ggplot2", 
                   "PredictiveEcology/reproducible", "tictoc",
                   "raster", "terra", "crayon", "stringi", "R.utils"),
   parameters = rbind(
@@ -186,7 +186,7 @@ doEvent.anthroDisturbance_DataPrep = function(sim, eventTime, eventType) {
         sim$rasterToMatch <- terra::rast(sim$rasterToMatch)        
       }
       
-      if (class(sim$studyArea) != "SpatVector"){
+      if (!inherits(sim$studyArea, "SpatVector")){
         message(crayon::yellow("studyArea is not a SpatVector. Converting."))
         sim$studyArea <- terra::vect(sim$studyArea)
       }

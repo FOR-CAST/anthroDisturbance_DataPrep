@@ -39,7 +39,7 @@ checkDisturbanceProportions <- function(DT,
                       rasterToMatch = rasterToMatch,
                       destinationPath = destinationPath, 
                       fun = "terra::vect", 
-                      overwrite = FALSE), dissolve = TRUE)
+                      overwrite = getOption("reproducible.overwrite", FALSE)), dissolve = TRUE)
     
     # 5. Buffer and calculate area disturbed
 
@@ -73,11 +73,11 @@ checkDisturbanceProportions <- function(DT,
     # rp3 <- predict(logo, rfm, fun=rfun)
     # parallel::stopCluster(cls)
     
-    tic(paste0("Time elapsed for buffering ", layName, ":"))
+    tictoc::tic(paste0("Time elapsed for buffering ", layName, ":"))
     bLay <- terra::buffer(lay, width = 500)
-    toc()
+    tictoc::toc()
     terra::writeVector(bLay, filename = flNm,
-                       filetype = "ESRI Shapefile")
+                       filetype = "ESRI Shapefile", overwrite = TRUE)
     } else {
     bLay <- vect(fullFlnmSHP)
   }
@@ -89,7 +89,7 @@ checkDisturbanceProportions <- function(DT,
     bLayRas <- fasterize::fasterize(sf = bLaySF, raster = rasterToMatchR)
     names(bLayRas) <- layName
     terra::writeRaster(bLayRas, filename = fullFlnmTIF,
-                       filetype = "GTiff")
+                       filetype = "GTiff", overwrite = TRUE)
     } else {
       bLayRas <- rast(fullFlnmTIF)
     }
