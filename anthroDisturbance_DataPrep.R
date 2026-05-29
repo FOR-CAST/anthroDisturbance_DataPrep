@@ -258,14 +258,18 @@ doEvent.anthroDisturbance_DataPrep = function(sim, eventTime, eventType) {
   }
   
   if (!suppliedElsewhere(object = "disturbanceDT", sim = sim)) {
-
-    sim$disturbanceDT <- prepInputs(url = extractURL("disturbanceDT"),
-                                    targetFile = "disturbanceDT.csv",
-                                    destinationPath = dPath,
-                                    fun = "data.table::fread",
-                                    header = TRUE, 
-                                    userTags = "disturbanceDT")
-
+    if (file.exists(file.path(dPath, "disturbanceDT.csv"))){
+      print("disturbanceDT found in data! Loading..." )
+      sim$disturbanceDT <- data.table::fread(file.path(dPath, "disturbanceDT.csv"))
+    } else {
+      print("disturbanceDT NOT found in data! Downloading..." )
+      sim$disturbanceDT <- prepInputs(url = extractURL("disturbanceDT"),
+                                      targetFile = "disturbanceDT.csv",
+                                      destinationPath = dPath,
+                                      fun = "data.table::fread",
+                                      header = TRUE, 
+                                      userTags = "disturbanceDT")
+    }
     warning(paste0("disturbanceDT was not supplied. Defaulting to an example from ",
                    " Northwest Territories"), immediate. = TRUE)
   }
