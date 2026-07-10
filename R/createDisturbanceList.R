@@ -74,10 +74,10 @@ createDisturbanceList <- function(DT,
                 # and union takes too long
                 if (NROW(maskedLay) == 0) return(NULL) # For small study areas, one of the tiles might
                 # not intersect
-                rasLay <- fasterize::fasterize(sf::st_as_sf(maskedLay), raster(rasterToMatch),
-                                               field = names(layR)[grepl(names(layR),
-                                                                         pattern = CTS)])
-                return(rast(rasLay))
+                rasLay <- terra::rasterize(maskedLay, rasterToMatch,
+                                           field = names(layR)[grepl(names(layR),
+                                                                     pattern = CTS)])
+                return(rasLay)
               })
               allLays <- allLays[!sapply(allLays, is.null)]
               layRas <- do.call(what = terra::mosaic, args = allLays)

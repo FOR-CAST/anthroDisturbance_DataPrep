@@ -5,7 +5,6 @@ checkDisturbanceProportions <- function(DT,
   # 1. Subset what is NOT potential
   rowsToRemove <- grepl(pattern = "potential", x = DT[["dataClass"]])
   studyAreaTotalArea <- terra::expanse(studyArea, transform = FALSE, unit = "km")
-  rasterToMatchR <- raster(rasterToMatch)
   # NOTES:
   # NorthwestTerritories_15m_Disturb_Perturb_XXXX.shp: available at NWT ArcGIS hub, but 
   # there is no direct download. That's why it is hosted on GDrive
@@ -85,8 +84,7 @@ checkDisturbanceProportions <- function(DT,
     message(crayon::green(paste0("Total area disturbed for ", layName, " as vector: ", round(bLay$totalAreaKm2, digits = 3), "km2")))
     message(paste0("This represents ", round(100*(bLay$totalAreaKm2/studyAreaTotalArea), 4), "% of total area."))
     if (!file.exists(fullFlnmTIF)){
-    bLaySF <- sf::st_as_sf(bLay)
-    bLayRas <- fasterize::fasterize(sf = bLaySF, raster = rasterToMatchR)
+    bLayRas <- terra::rasterize(bLay, rasterToMatch)
     names(bLayRas) <- layName
     terra::writeRaster(bLayRas, filename = fullFlnmTIF,
                        filetype = "GTiff", overwrite = TRUE)

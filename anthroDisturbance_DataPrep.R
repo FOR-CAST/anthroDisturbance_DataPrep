@@ -26,9 +26,9 @@ defineModule(sim, list(
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.md", "anthroDisturbance_DataPrep.Rmd"), ## same file
-  reqdPkgs = list("SpaDES.core (>=2.0.3.9002)", "ggplot2", 
-                  "PredictiveEcology/reproducible", "tictoc",
-                  "raster", "terra", "crayon", "stringi", "R.utils"),
+  reqdPkgs = list("crayon", "ggplot2", "googledrive", "qs2", "R.utils",
+                  "PredictiveEcology/reproducible", "SpaDES.core (>=2.0.3.9002)",
+                  "stringi", "terra", "tictoc", "zip"),
   parameters = rbind(
     #defineParameter("paramName", "paramClass", value, min, max, "parameter description"),
     defineParameter(".plots", "character", "screen", NA, NA,
