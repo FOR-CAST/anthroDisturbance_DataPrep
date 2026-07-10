@@ -15,11 +15,12 @@ defineModule(sim, list(
                        "lists (specific class) needed for generating disturbance ",
                        "layers"),
   keywords = "",
-  authors = structure(list(list(given = "Tati", 
-                                family = "Micheletti", role = c("aut", "cre"), 
-                                email = "tati.micheletti@gmail.com", 
-                                comment = NULL)), 
-                      class = "person"),
+  authors = c(
+    person(given = "Tati", family = "Micheletti", role = "aut",
+           email = "tati.micheletti@gmail.com"),
+    person(given = "Alex M.", family = "Chubaty", role = c("aut", "cre"),
+           email = "achubaty@for-cast.ca")
+  ),
   childModules = character(0),
   version = list(anthroDisturbance_DataPrep = "1.0.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
