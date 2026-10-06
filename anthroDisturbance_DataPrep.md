@@ -1,6 +1,6 @@
 anthroDisturbance_DataPrep Manual
 ================
-Last updated: 2026-07-10
+Last updated: 2026-10-06
 
 - [anthroDisturbance_DataPrep
   Module](#anthrodisturbance_dataprep-module)
