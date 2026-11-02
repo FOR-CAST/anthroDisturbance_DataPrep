@@ -56,7 +56,7 @@ jobs:
             any::tictoc
             any::zip
             any::fasterize
-            github::PredictiveEcology/reproducible@d1ea851eea939dabc0b59d2d121072938e2bd9f4
+            github::PredictiveEcology/reproducible@039357e9e9cf2e8c8db2d73cfca7420ab34f5b91
 
       - name: Run tests
         run: Rscript tests/run-tests.R
