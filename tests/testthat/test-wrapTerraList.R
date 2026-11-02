@@ -25,7 +25,7 @@ test_that("wrapTerraList wraps and saves SpatVectors", {
     for (feat in names(tv[[grp]])) {
       pth <- res[[grp]][[feat]]
       expect_true(file.exists(pth), info = pth)
-      wrapped <- qread(pth)
+      wrapped <- qs2::qs_read(pth)
       rec <- terra::vect(wrapped)
       expect_equal(terra::crds(rec), terra::crds(tv[[grp]][[feat]]))
     }
@@ -55,14 +55,14 @@ test_that("wrapTerraList wraps SpatRaster objects", {
   
   pth <- res$r1$r
   expect_true(file.exists(pth))
-  wrapped <- qread(pth)
+  wrapped <- qs2::qs_read(pth)
   rec_r <- terra::rast(wrapped)
   expect_equal(terra::values(rec_r), terra::values(create_dummy_rast()))
   expect_equal(terra::crs(rec_r, proj=TRUE), terra::crs(create_dummy_rast(), proj=TRUE))
 })
 
 # ---- Manifest structure ----
-test_that("theList.qs manifest has correct structure", {
+test_that("theList.qs2 manifest has correct structure", {
   tmp <- tempfile(); dir.create(tmp)
   on.exit(unlink(tmp, recursive=TRUE), add=TRUE)
   
@@ -70,7 +70,7 @@ test_that("theList.qs manifest has correct structure", {
              c = list(d = create_dummy_vect()))
   suppressWarnings(wrapTerraList(tv, generalPath = tmp, zipFiles = TRUE))
   
-  manifest <- qread(file.path(tmp, "theList.qs"))
+  manifest <- qs2::qs_read(file.path(tmp, "theList.qs2"))
   expect_named(manifest, names(tv))
   for (grp in names(tv)) {
     expect_named(manifest[[grp]], names(tv[[grp]]))
@@ -89,7 +89,7 @@ test_that("wrapTerraList creates zip and manifest when zipFiles=TRUE", {
   tv <- list(x = list(v = create_dummy_vect()))
   suppressWarnings(wrapTerraList(tv, generalPath = tmp, zipFiles = TRUE))
   expect_true(file.exists(file.path(tmp, "disturbanceList.zip")))
-  expect_true(file.exists(file.path(tmp, "theList.qs")))
+  expect_true(file.exists(file.path(tmp, "theList.qs2")))
 })
 
 # stub drive_upload for drive tests
