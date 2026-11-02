@@ -1,6 +1,6 @@
 anthroDisturbance_DataPrep Manual
 ================
-Last updated: 2026-10-06
+Last updated: 2026-11-02
 
 - [anthroDisturbance_DataPrep
   Module](#anthrodisturbance_dataprep-module)
@@ -89,19 +89,19 @@ The full list of module inputs:
 
 Summary of user-visible parameters:
 
-| paramName | paramClass | default | min | max | paramDesc |
-|:---|:---|:---|:---|:---|:---|
-| .plots | character | screen | NA | NA | Used by Plots function, which can be optionally used here |
-| .plotInitialTime | numeric | 0 | NA | NA | Describes the simulation time at which the first plot event should occur. |
-| .plotInterval | numeric | NA | NA | NA | Describes the simulation time interval between plot events. |
-| .saveInitialTime | numeric | NA | NA | NA | Describes the simulation time at which the first save event should occur. |
-| .saveInterval | numeric | NA | NA | NA | This describes the simulation time interval between save events. |
-| .seed | list |  | NA | NA | Named list of seeds to use for each event (names). |
-| .useCache | logical | FALSE | NA | NA | Should caching of events or module be used? |
-| studyAreaName | character | NT1 | NA | NA | Name to be used to save interin disturbance layers, related to location |
-| checkDisturbanceProportions | logical | FALSE | NA | NA | Should the disturbances from the original data be pre-buffered to calculate area? Mainly designed for debugging and information on original data. |
-| whatNotToCombine | character | potential | NA | NA | Here the user should specify which dataClass from the object disturbances should NOT be combined.This is especially important for potential resource layers that need idiosyncratic processes to be generated, which might happen on a separate module (i.e., potentialResourcesYT_DataPrep). This parameter is used as a pattern string to identify which dataClass contains the pattern and excludes these from the harmonization of the datasets. |
-| useSavedList | logical | TRUE | NA | NA | If the disturbances object was saved and the parameteris TRUE, it returns the list. Saves time but attention is needed to make sure the objects are correct! |
+| paramName | paramClass | default | min | max | paramDesc | cacheKey |
+|:---|:---|:---|:---|:---|:---|:---|
+| .plots | character | screen | NA | NA | Used by Plots function, which can be optionally used here | TRUE |
+| .plotInitialTime | numeric | 0 | NA | NA | Describes the simulation time at which the first plot event should occur. | TRUE |
+| .plotInterval | numeric | NA | NA | NA | Describes the simulation time interval between plot events. | TRUE |
+| .saveInitialTime | numeric | NA | NA | NA | Describes the simulation time at which the first save event should occur. | TRUE |
+| .saveInterval | numeric | NA | NA | NA | This describes the simulation time interval between save events. | TRUE |
+| .seed | list |  | NA | NA | Named list of seeds to use for each event (names). | TRUE |
+| .useCache | logical | FALSE | NA | NA | Should caching of events or module be used? | TRUE |
+| studyAreaName | character | NT1 | NA | NA | Name to be used to save interin disturbance layers, related to location | TRUE |
+| checkDisturbanceProportions | logical | FALSE | NA | NA | Should the disturbances from the original data be pre-buffered to calculate area? Mainly designed for debugging and information on original data. | TRUE |
+| whatNotToCombine | character | potential | NA | NA | Here the user should specify which dataClass from the object disturbances should NOT be combined.This is especially important for potential resource layers that need idiosyncratic processes to be generated, which might happen on a separate module (i.e., potentialResourcesYT_DataPrep). This parameter is used as a pattern string to identify which dataClass contains the pattern and excludes these from the harmonization of the datasets. | TRUE |
+| useSavedList | logical | TRUE | NA | NA | If the disturbances object was saved and the parameteris TRUE, it returns the list. Saves time but attention is needed to make sure the objects are correct! | TRUE |
 
 ### Events
 
