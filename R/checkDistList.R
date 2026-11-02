@@ -34,6 +34,6 @@ checkDistList <- function(distList,
   }
   tList <- wrapTerraList(terraList = L1,
                          generalPath = generalPath)
-  qs::qsave(tList, listFileName)
+  qs2::qs_save(tList, listFileName)
   return(L1)
 }

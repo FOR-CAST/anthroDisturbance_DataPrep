@@ -83,34 +83,34 @@ testthat::test_that("errors when input is not a 2-level nested list", {
   
   # Not a list at all
   testthat::expect_error(
-    checkDistList(demo$sa, demo$sa, demo$rtm, tempfile(fileext = ".qs"), tempdir()),
+    checkDistList(demo$sa, demo$sa, demo$rtm, tempfile(fileext = ".qs2"), tempdir()),
     "less than 2 levels", fixed = TRUE
   )
   
   # A 1-level list (no inner list)
   bad <- list(forestry = make_square(0, 0, 1, 1))
   testthat::expect_error(
-    checkDistList(bad, demo$sa, demo$rtm, tempfile(fileext = ".qs"), tempdir()),
+    checkDistList(bad, demo$sa, demo$rtm, tempfile(fileext = ".qs2"), tempdir()),
     "less than 2 levels", fixed = TRUE
   )
   
   # A 3-level list (inner list inside inner list)
   too_deep <- list(forestry = list(cutblocks = list(A = make_square(0,0,1,1))))
   testthat::expect_error(
-    checkDistList(too_deep, demo$sa, demo$rtm, tempfile(fileext = ".qs"), tempdir()),
+    checkDistList(too_deep, demo$sa, demo$rtm, tempfile(fileext = ".qs2"), tempdir()),
     "more than 2 levels", fixed = TRUE
   )
 })
 
-testthat::test_that("happy path: structure preserved; postProcess, wrapTerraList, qsave invoked", {
+testthat::test_that("happy path: structure preserved; postProcess, wrapTerraList, qs_save invoked", {
   testthat::skip_on_cran()
   demo <- build_demo_inputs()
-  
+
   # capture bins
   call_env <- new.env(parent = emptyenv())
   call_env$post_calls <- list()
   call_env$wrap_args  <- NULL
-  call_env$qsave_args <- NULL
+  call_env$save_args  <- NULL
   
   # mock reproducible::postProcess (namespaced)
   local_ns_mock("reproducible", "postProcess", function(x, studyArea, rasterToMatch, userTags) {
@@ -129,9 +129,9 @@ testthat::test_that("happy path: structure preserved; postProcess, wrapTerraList
     structure(list(marker = "wrapped-sentinel"), class = "wrapped")
   })
   
-  # mock qs::qsave (namespaced)
-  local_ns_mock("qs", "qsave", function(x, file, ...) {
-    call_env$qsave_args <<- list(x = x, file = file)
+  # mock qs2::qs_save (namespaced; qs2 is the module's declared serializer)
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) {
+    call_env$save_args <<- list(object = object, file = file)
     invisible(NULL)
   })
   
@@ -140,7 +140,7 @@ testthat::test_that("happy path: structure preserved; postProcess, wrapTerraList
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
   
-  out_file <- tempfile(fileext = ".qs")
+  out_file <- tempfile(fileext = ".qs2")
   out <- checkDistList(
     distList     = demo$distList,
     studyArea    = demo$sa,
@@ -148,7 +148,7 @@ testthat::test_that("happy path: structure preserved; postProcess, wrapTerraList
     listFileName = out_file,
     generalPath  = tempdir()
   )
-  
+
   # 1) Returned object is a 2-level list with preserved names
   testthat::expect_type(out, "list")
   testthat::expect_setequal(names(out), c("forestry", "energy"))
@@ -176,10 +176,10 @@ testthat::test_that("happy path: structure preserved; postProcess, wrapTerraList
   # The function returns L1 (post-processed list). That should be identical to what wrapTerraList saw.
   testthat::expect_equal(call_env$wrap_args$terraList, out)
   
-  # 4) qs::qsave was called with whatever wrapTerraList returned and correct path
-  testthat::expect_false(is.null(call_env$qsave_args))
-  testthat::expect_s3_class(call_env$qsave_args$x, "wrapped")
-  testthat::expect_identical(call_env$qsave_args$file, out_file)
+  # 4) qs2::qs_save was called with whatever wrapTerraList returned and correct path
+  testthat::expect_false(is.null(call_env$save_args))
+  testthat::expect_s3_class(call_env$save_args$object, "wrapped")
+  testthat::expect_identical(call_env$save_args$file, out_file)
 })
 
 testthat::test_that("optional integration: real postProcess crops to studyArea (quick sanity)", {
@@ -187,9 +187,9 @@ testthat::test_that("optional integration: real postProcess crops to studyArea (
 
   demo <- build_demo_inputs()
   
-  # Use real reproducible::postProcess; only stub wrapTerraList + qs::qsave
+  # Use real reproducible::postProcess; only stub wrapTerraList + qs2::qs_save
   mockery::stub(checkDistList, "wrapTerraList", function(terraList, generalPath) terraList)
-  local_ns_mock("qs", "qsave", function(x, file, ...) invisible(NULL))
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) invisible(NULL))
   
   # Ensure the digest symbol exists (checkDistList calls `.robustDigest`)
   if (!exists(".robustDigest", mode = "function")) {
@@ -200,7 +200,7 @@ testthat::test_that("optional integration: real postProcess crops to studyArea (
     distList      = demo$distList,
     studyArea     = demo$sa,
     rasterToMatch = demo$rtm,
-    listFileName  = tempfile(fileext = ".qs"),
+    listFileName  = tempfile(fileext = ".qs2"),
     generalPath   = tempdir()
   )
   
@@ -231,9 +231,9 @@ testthat::test_that("SpatRaster entries are cropped to studyArea and aligned to 
     remote = list(rastermask = r2)  # raster branch only
   )
   
-  # Use real postProcess; stub wrap & qsave
+  # Use real postProcess; stub wrap & qs_save
   mockery::stub(checkDistList, "wrapTerraList", function(terraList, generalPath) terraList)
-  local_ns_mock("qs", "qsave", function(x, file, ...) invisible(NULL))
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) invisible(NULL))
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -242,7 +242,7 @@ testthat::test_that("SpatRaster entries are cropped to studyArea and aligned to 
     distList      = distList,
     studyArea     = demo$sa,
     rasterToMatch = demo$rtm,
-    listFileName  = tempfile(fileext = ".qs"),
+    listFileName  = tempfile(fileext = ".qs2"),
     generalPath   = tempdir()
   )
   
@@ -266,7 +266,7 @@ testthat::test_that("Non-overlapping vector becomes empty without errors", {
   distList <- list(forestry = list(cutblocks = poly_outside))
   
   mockery::stub(checkDistList, "wrapTerraList", function(terraList, generalPath) terraList)
-  local_ns_mock("qs", "qsave", function(x, file, ...) invisible(NULL))
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) invisible(NULL))
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -275,7 +275,7 @@ testthat::test_that("Non-overlapping vector becomes empty without errors", {
     distList      = distList,
     studyArea     = demo$sa,
     rasterToMatch = demo$rtm,
-    listFileName  = tempfile(fileext = ".qs"),
+    listFileName  = tempfile(fileext = ".qs2"),
     generalPath   = tempdir()
   )
   
@@ -290,7 +290,7 @@ testthat::test_that("Informative messages are emitted per layer", {
   # Quiet postProcess; we only want the message from checkDistList itself
   local_ns_mock("reproducible", "postProcess", function(x, studyArea, rasterToMatch, userTags) x)
   mockery::stub(checkDistList, "wrapTerraList", function(terraList, generalPath) terraList)
-  local_ns_mock("qs", "qsave", function(x, file, ...) invisible(NULL))
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) invisible(NULL))
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -301,23 +301,23 @@ testthat::test_that("Informative messages are emitted per layer", {
       distList      = demo$distList,
       studyArea     = demo$sa,
       rasterToMatch = demo$rtm,
-      listFileName  = tempfile(fileext = ".qs"),
+      listFileName  = tempfile(fileext = ".qs2"),
       generalPath   = tempdir()
     ),
     regexp = expect_msg
   )
 })
 
-testthat::test_that("wrapTerraList error propagates and qsave is not called", {
+testthat::test_that("wrapTerraList error propagates and qs_save is not called", {
   testthat::skip_on_cran()
   demo <- build_demo_inputs()
   
-  called_qsave <- FALSE
+  called_save <- FALSE
   local_ns_mock("reproducible", "postProcess", function(x, ...) x)
   mockery::stub(checkDistList, "wrapTerraList",
                 function(terraList, generalPath) stop("boom wrap")
   )  
-  local_ns_mock("qs", "qsave", function(x, file, ...) { called_qsave <<- TRUE; invisible(NULL) })
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) { called_save <<- TRUE; invisible(NULL) })
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -327,12 +327,12 @@ testthat::test_that("wrapTerraList error propagates and qsave is not called", {
       distList      = demo$distList,
       studyArea     = demo$sa,
       rasterToMatch = demo$rtm,
-      listFileName  = tempfile(fileext = ".qs"),
+      listFileName  = tempfile(fileext = ".qs2"),
       generalPath   = tempdir()
     ),
     "boom wrap"
   )
-  testthat::expect_false(called_qsave)
+  testthat::expect_false(called_save)
 })
 
 testthat::test_that("Empty outer list is handled gracefully", {
@@ -342,13 +342,13 @@ testthat::test_that("Empty outer list is handled gracefully", {
   empty <- list()
   
   seen_wrap <- FALSE
-  seen_qsave <- FALSE
+  seen_save <- FALSE
   mockery::stub(checkDistList, "wrapTerraList", function(terraList, generalPath) {
     seen_wrap <<- TRUE
     testthat::expect_identical(terraList, list())
     terraList
   })
-  local_ns_mock("qs", "qsave", function(x, file, ...) { seen_qsave <<- TRUE; invisible(NULL) })
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) { seen_save <<- TRUE; invisible(NULL) })
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -357,14 +357,14 @@ testthat::test_that("Empty outer list is handled gracefully", {
     distList      = empty,
     studyArea     = demo$sa,
     rasterToMatch = demo$rtm,
-    listFileName  = tempfile(fileext = ".qs"),
+    listFileName  = tempfile(fileext = ".qs2"),
     generalPath   = tempdir()
   )
   
   testthat::expect_true(is.list(out))
   testthat::expect_length(out, 0L)
   testthat::expect_true(seen_wrap)
-  testthat::expect_true(seen_qsave)
+  testthat::expect_true(seen_save)
 })
 
 # --- More tests for checkDistList ------------------------------------------------
@@ -383,9 +383,9 @@ testthat::test_that("SpatRaster entries are cropped to studyArea and aligned to 
     remote = list(rastermask = r2)
   )
   
-  # Use real postProcess; stub wrap & qsave
+  # Use real postProcess; stub wrap & qs_save
   mockery::stub(checkDistList, "wrapTerraList", function(terraList, generalPath) terraList)
-  local_ns_mock("qs", "qsave", function(x, file, ...) invisible(NULL))
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) invisible(NULL))
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -394,7 +394,7 @@ testthat::test_that("SpatRaster entries are cropped to studyArea and aligned to 
     distList      = distList,
     studyArea     = demo$sa,
     rasterToMatch = demo$rtm,
-    listFileName  = tempfile(fileext = ".qs"),
+    listFileName  = tempfile(fileext = ".qs2"),
     generalPath   = tempdir()
   )
   
@@ -423,7 +423,7 @@ testthat::test_that("Non-overlapping vector becomes empty without errors", {
   distList <- list(forestry = list(cutblocks = poly_outside))
   
   mockery::stub(checkDistList, "wrapTerraList", function(terraList, generalPath) terraList)
-  local_ns_mock("qs", "qsave", function(x, file, ...) invisible(NULL))
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) invisible(NULL))
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -432,7 +432,7 @@ testthat::test_that("Non-overlapping vector becomes empty without errors", {
     distList      = distList,
     studyArea     = demo$sa,
     rasterToMatch = demo$rtm,
-    listFileName  = tempfile(fileext = ".qs"),
+    listFileName  = tempfile(fileext = ".qs2"),
     generalPath   = tempdir()
   )
   
@@ -449,7 +449,7 @@ testthat::test_that("Informative messages are emitted per layer", {
   # Quiet postProcess; we only assert the messages our function emits
   local_ns_mock("reproducible", "postProcess", function(x, studyArea, rasterToMatch, userTags) x)
   mockery::stub(checkDistList, "wrapTerraList", function(terraList, generalPath) terraList)
-  local_ns_mock("qs", "qsave", function(x, file, ...) invisible(NULL))
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) invisible(NULL))
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -461,25 +461,25 @@ testthat::test_that("Informative messages are emitted per layer", {
       distList      = demo$distList,
       studyArea     = demo$sa,
       rasterToMatch = demo$rtm,
-      listFileName  = tempfile(fileext = ".qs"),
+      listFileName  = tempfile(fileext = ".qs2"),
       generalPath   = tempdir()
     ),
     regexp = expect_msg
   )
 })
 
-# 4) wrapTerraList error propagates; qsave is not called
-testthat::test_that("wrapTerraList error propagates and qsave is not called", {
+# 4) wrapTerraList error propagates; qs_save is not called
+testthat::test_that("wrapTerraList error propagates and qs_save is not called", {
   testthat::skip_on_cran()
   
   demo <- build_demo_inputs()
   
-  called_qsave <- FALSE
+  called_save <- FALSE
   local_ns_mock("reproducible", "postProcess", function(x, ...) x)
   mockery::stub(checkDistList, "wrapTerraList",
                 function(terraList, generalPath) stop("boom wrap")
   )  
-  local_ns_mock("qs", "qsave", function(x, file, ...) { called_qsave <<- TRUE; invisible(NULL) })
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) { called_save <<- TRUE; invisible(NULL) })
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -489,12 +489,12 @@ testthat::test_that("wrapTerraList error propagates and qsave is not called", {
       distList      = demo$distList,
       studyArea     = demo$sa,
       rasterToMatch = demo$rtm,
-      listFileName  = tempfile(fileext = ".qs"),
+      listFileName  = tempfile(fileext = ".qs2"),
       generalPath   = tempdir()
     ),
     "boom wrap"
   )
-  testthat::expect_false(called_qsave)
+  testthat::expect_false(called_save)
 })
 
 # 5) Empty outer list handled gracefully (still wraps & saves)
@@ -505,13 +505,13 @@ testthat::test_that("Empty outer list is handled gracefully", {
   empty <- list()
   
   seen_wrap  <- FALSE
-  seen_qsave <- FALSE
+  seen_save <- FALSE
   mockery::stub(checkDistList, "wrapTerraList", function(terraList, generalPath) {
     seen_wrap <<- TRUE
     testthat::expect_identical(terraList, list())
     terraList
   })
-  local_ns_mock("qs", "qsave", function(x, file, ...) { seen_qsave <<- TRUE; invisible(NULL) })
+  local_ns_mock("qs2", "qs_save", function(object, file, ...) { seen_save <<- TRUE; invisible(NULL) })
   if (!exists(".robustDigest", mode = "function")) {
     local_global_mock(".robustDigest", function(x) "FAKEHASH")
   }
@@ -520,12 +520,12 @@ testthat::test_that("Empty outer list is handled gracefully", {
     distList      = empty,
     studyArea     = demo$sa,
     rasterToMatch = demo$rtm,
-    listFileName  = tempfile(fileext = ".qs"),
+    listFileName  = tempfile(fileext = ".qs2"),
     generalPath   = tempdir()
   )
   
   testthat::expect_true(is.list(out))
   testthat::expect_length(out, 0L)
   testthat::expect_true(seen_wrap)
-  testthat::expect_true(seen_qsave)
+  testthat::expect_true(seen_save)
 })
