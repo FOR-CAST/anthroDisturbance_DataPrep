@@ -99,7 +99,7 @@ test_that("wrapTerraList uploads zip only when zipFiles=TRUE and uploadZip provi
   
   tv <- list(a = list(b = create_dummy_vect()))
   mock_up <- mockery::mock()
-  mockery::stub(wrapTerraList, 'drive_upload', mock_up)
+  mockery::stub(wrapTerraList, 'googledrive::drive_upload', mock_up)
   
   # zipFiles=FALSE => no upload
   wrapTerraList(tv, generalPath = tmp, zipFiles = FALSE, uploadZip = "drive123")
@@ -121,7 +121,7 @@ test_that("unwrapTerraList downloads and unwraps when given a Drive link", {
   dest <- tempfile(); dir.create(dest)
   on.exit(unlink(dest, recursive=TRUE), add=TRUE)
   
-  mockery::stub(unwrapTerraList, 'drive_download', function(file, path) {
+  mockery::stub(unwrapTerraList, 'googledrive::drive_download', function(file, path) {
     expect_equal(file, as_id("link123"))
     file.copy(zipf, file.path(dest, "disturbanceList.zip"))
     NULL
