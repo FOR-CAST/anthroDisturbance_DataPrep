@@ -2,6 +2,23 @@
 ## The tests call the helpers in R/ directly, so this sources them and attaches the packages their
 ## unqualified calls come from (data.table, googledrive, reproducible, terra). Every test is
 ## skip_on_cran(), so NOT_CRAN is set here. Used by .github/workflows/test-module.yaml.
+## Tests use at most 2 cores, as CRAN asks; TEST_CORES raises that, to 4 at most, for a longer run.
+## R starts OpenMP and BLAS before this script runs, so the limits must be in the environment R
+## starts with: without them, the script runs itself again in a new R process that has them.
+asked <- suppressWarnings(as.integer(Sys.getenv("TEST_CORES")))
+cores <- if (is.na(asked)) 2L else min(4L, max(1L, asked))
+limit <- suppressWarnings(as.integer(Sys.getenv("OMP_THREAD_LIMIT")))
+if (is.na(limit) || limit > cores) {
+  status <- system2(
+    file.path(R.home("bin"), "R"),
+    shQuote(commandArgs(trailingOnly = FALSE)[-1L]),
+    env = paste0(
+      c("OMP_THREAD_LIMIT=", "OMP_NUM_THREADS=", "OPENBLAS_NUM_THREADS=", "MKL_NUM_THREADS="),
+      cores
+    )
+  )
+  quit(save = "no", status = status)
+}
 Sys.setenv(NOT_CRAN = "true")
 suppressPackageStartupMessages({
   library(testthat)
@@ -11,6 +28,7 @@ suppressPackageStartupMessages({
   library(reproducible)
   library(terra)
 })
+data.table::setDTthreads(cores)
 for (f in list.files("R", "[.]R$", full.names = TRUE)) {
   source(f)
 }

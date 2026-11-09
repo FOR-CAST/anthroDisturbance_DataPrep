@@ -60,3 +60,9 @@ jobs:
 
       - name: Run tests
         run: Rscript tests/run-tests.R
+        env:
+          ## at most 2 cores, as CRAN asks (tests/run-tests.R also enforces it)
+          OMP_THREAD_LIMIT: 2
+          OMP_NUM_THREADS: 2
+          OPENBLAS_NUM_THREADS: 2
+          MKL_NUM_THREADS: 2
