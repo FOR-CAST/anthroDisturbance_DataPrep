@@ -134,8 +134,6 @@ make_DT <- function() {
 # ---- tests -----------------------------------------------------------------
 
 test_that("Skips 'potential' rows and processes the rest; emits expected messages", {
-  skip_if_not_installed("fasterize")
-  
   fx  <- make_fixture_space()
   tmp <- tempfile(pattern = "cdp_out_"); dir.create(tmp, showWarnings = FALSE)
   
@@ -190,8 +188,6 @@ test_that("Skips 'potential' rows and processes the rest; emits expected message
 })
 
 test_that("Produces tangible outputs (raster and/or vector) into destinationPath", {
-  skip_if_not_installed("fasterize")
-  
   fx  <- make_fixture_space()
   tmp <- tempfile(pattern = "cdp_out2_"); dir.create(tmp, showWarnings = FALSE)
   
@@ -212,8 +208,6 @@ test_that("Produces tangible outputs (raster and/or vector) into destinationPath
 })
 
 test_that("Numerics are sane: reported disturbed area is > 0 and < study area", {
-  skip_if_not_installed("fasterize")
-  
   fx  <- make_fixture_space()
   tmp <- tempfile(pattern = "cdp_out3_"); dir.create(tmp, showWarnings = FALSE)
   
@@ -236,3 +230,32 @@ test_that("Numerics are sane: reported disturbed area is > 0 and < study area", 
   expect_true(is.finite(km2) && km2 > 0 && km2 < 25)  # study area is 25 km²
 })
 
+test_that("Buffered rasters: cells inside a buffered disturbance are 1, cells outside are not", {
+  fx  <- make_fixture_space()
+  tmp <- tempfile(pattern = "cdp_out4_"); dir.create(tmp, showWarnings = FALSE)
+
+  fake_prep <- make_fake_prep(fx$rtm)
+  mockery::stub(checkDisturbanceProportions, "prepInputs", fake_prep)
+
+  suppressMessages(invisible(checkDisturbanceProportions(
+    DT              = make_DT(),
+    destinationPath = tmp,
+    studyArea       = fx$sa,
+    rasterToMatch   = fx$rtm
+  )))
+
+  centres <- terra::vect(terra::xyFromCell(fx$rtm, seq_len(terra::ncell(fx$rtm))),
+                         crs = terra::crs(fx$rtm))
+  for (layName in c("roads_line_500m", "clearcuts_poly_500m")) {
+    ras <- terra::rast(file.path(tmp, layName, paste0(layName, ".tif")))
+    vec <- terra::vect(file.path(tmp, layName, paste0(layName, ".shp")))
+    ones <- which(terra::values(ras, mat = FALSE) == 1)
+    # centres strictly inside the buffer are 1; a 1 is never outside it (centres exactly on the
+    # buffer's edge may go either way)
+    strictlyInside <- which(terra::is.related(centres, vec, "within"))
+    touching <- which(terra::is.related(centres, vec, "intersects"))
+    expect_gt(length(strictlyInside), 0)
+    expect_true(all(strictlyInside %in% ones), info = layName)
+    expect_true(all(ones %in% touching), info = layName)
+  }
+})
