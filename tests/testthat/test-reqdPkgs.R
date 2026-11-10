@@ -21,14 +21,25 @@ moduleReqdPkgs <- function(moduleFile) {
   sub("@.*$", "", sub("^.*/", "", sub("[ (].*$", "", pkgs)))
 }
 
-# Packages the code in `files` calls as pkg::fun() (comments excluded), without base R's own
+# Packages the code in `files` calls as pkg::fun() or pkg:::fun() (comments and strings excluded),
+# without base R's own. Walks the parsed code, so it does not need parse data (getParseData()
+# returns NULL when the keep.parse.data option is FALSE, as it can be under covr).
 qualifiedPkgs <- function(files) {
   basePkgs <- c("base", "utils", "stats", "methods", "tools", "parallel", "grDevices", "graphics")
-  pkgs <- unlist(lapply(files, function(f) {
-    pd <- utils::getParseData(parse(f, keep.source = TRUE))
-    pd$text[pd$token == "SYMBOL_PACKAGE"]
-  }))
-  setdiff(unique(pkgs), basePkgs)
+  found <- character(0)
+  walk <- function(e) {
+    if (is.pairlist(e)) e <- as.list(e) # function arguments and their defaults
+    if (is.call(e) && (identical(e[[1L]], as.name("::")) || identical(e[[1L]], as.name(":::")))) {
+      found <<- c(found, as.character(e[[2L]]))
+    }
+    if (is.call(e) || is.list(e)) {
+      for (i in seq_along(e)) {
+        if (!identical(e[[i]], quote(expr = ))) walk(e[[i]]) # skip empty arguments, as in x[, 1]
+      }
+    }
+  }
+  for (f in files) for (e in parse(f, keep.source = FALSE)) walk(e)
+  setdiff(unique(found), basePkgs)
 }
 
 # --- Tests -----------------------------------------------------------------
@@ -49,6 +60,7 @@ testthat::test_that("reqdPkgs declares every package the module code calls with 
   files <- c(file.path(moduleDir, "anthroDisturbance_DataPrep.R"),
              list.files(file.path(moduleDir, "R"), "[.]R$", full.names = TRUE))
   used <- qualifiedPkgs(files)
+  testthat::expect_true("terra" %in% used) # the scan found the module's terra:: calls
   reqd <- moduleReqdPkgs(file.path(moduleDir, "anthroDisturbance_DataPrep.R"))
   testthat::expect_equal(setdiff(used, reqd), character(0))
 })
