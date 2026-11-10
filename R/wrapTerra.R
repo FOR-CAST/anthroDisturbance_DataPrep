@@ -1,40 +1,4 @@
 # [EDIT-6] qs/GoogleDrive removed: identical to potentialResourcesNT_DataPrep/R/wrapTerra.R (.rds + Zenodo)
-# DEPRECATED. Kept for historical records on how the wrapping was performed
-# REASON: qs has been dprecated
-# wrapTerraList <- function(terraList, generalPath, zipFiles = FALSE, uploadZip = NULL){
-#   Require("stringi")
-#   Require("zip")
-#   listNames <- lapply(1:length(names(terraList)), function(index1){
-#     obj <- lapply(1:length(names(terraList[[index1]])), function(index2){
-#       # message(paste0("Saving ", names(terraList[[index1]][[index2]]), "\n"))
-#       obj2 <- terra::wrap(terraList[[index1]][[index2]])
-#       fileName <- file.path(generalPath, paste0(stringi::stri_rand_strings(1, 10), 
-#                                                 ".qs"))
-#       qs::qsave(obj2, fileName)
-#       return(fileName)
-#     })
-#     names(obj) <- names(terraList[[index1]])
-#     return(obj)
-#   })
-#   names(listNames) <- names(terraList)
-#   if (zipFiles) {
-#     # Need to save the files together with the list
-#     qs::qsave(listNames, file = file.path(generalPath, "theList.qs"))
-#     allFls <- c(file.path(generalPath, "theList.qs"), 
-#                 unlist(listNames, use.names = FALSE))
-#     zip(zipfile = file.path(generalPath, "disturbanceList.zip"), 
-#         files = allFls)
-#     message(paste0("disturbanceList zipped to ", file.path(generalPath, "disturbanceList.zip")))
-#     if (!is.null(uploadZip)) {
-#       Require("googledrive")
-#       drive_upload(media = file.path(generalPath, "disturbanceList.zip"), 
-#                    path = as_id(uploadZip))
-#       message(paste0("disturbanceList uploaded to ", uploadZip))
-#     } 
-#   }
-#   return(listNames)
-# }
-
 unwrapTerraList <- function(terraList, generalPath){
   # Updated to using rds instead
   updatePath <- FALSE
