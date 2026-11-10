@@ -22,14 +22,14 @@ defineModule(sim, list(
            email = "achubaty@for-cast.ca")
   ),
   childModules = character(0),
-  version = list(anthroDisturbance_DataPrep = "1.0.0"),
+  version = list(anthroDisturbance_DataPrep = "1.2.1"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.md", "anthroDisturbance_DataPrep.Rmd"), ## same file
-  reqdPkgs = list("crayon", "ggplot2", "googledrive", "qs2", "R.utils",
+  reqdPkgs = list("crayon", "ggplot2", "googledrive", "R.utils",
                   "PredictiveEcology/reproducible", "SpaDES.core (>=2.0.3.9002)",
-                  "stringi", "terra", "tictoc", "zip"),
+                  "terra", "tictoc"),
   parameters = rbind(
     #defineParameter("paramName", "paramClass", value, min, max, "parameter description"),
     defineParameter(".plots", "character", "screen", NA, NA,
