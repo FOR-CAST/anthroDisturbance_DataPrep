@@ -230,7 +230,7 @@ test_that("Numerics are sane: reported disturbed area is > 0 and < study area", 
   expect_true(is.finite(km2) && km2 > 0 && km2 < 25)  # study area is 25 km²
 })
 
-test_that("Buffered rasters: cells inside a buffered disturbance are 1, cells outside are not", {
+testthat::test_that("Buffered rasters: cells inside a buffered disturbance are 1, cells outside are not", {
   fx  <- make_fixture_space()
   tmp <- tempfile(pattern = "cdp_out4_"); dir.create(tmp, showWarnings = FALSE)
 
@@ -254,8 +254,8 @@ test_that("Buffered rasters: cells inside a buffered disturbance are 1, cells ou
     # buffer's edge may go either way)
     strictlyInside <- which(terra::is.related(centres, vec, "within"))
     touching <- which(terra::is.related(centres, vec, "intersects"))
-    expect_gt(length(strictlyInside), 0)
-    expect_true(all(strictlyInside %in% ones), info = layName)
-    expect_true(all(ones %in% touching), info = layName)
+    testthat::expect_gt(length(strictlyInside), 0)
+    testthat::expect_true(all(strictlyInside %in% ones), info = layName)
+    testthat::expect_true(all(ones %in% touching), info = layName)
   }
 })

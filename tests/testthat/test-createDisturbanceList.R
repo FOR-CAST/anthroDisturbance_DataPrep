@@ -463,13 +463,13 @@ test_that("multiple dataName outputs are isolated", {
 })
 
 testthat::test_that("createDisturbanceList: .mif tiles are rasterized by their value field and combined", {
-  skip_on_cran()
+  testthat::skip_on_cran()
 
-  rtm <- rast(nrows = 10, ncols = 10, xmin = 0, xmax = 100, ymin = 0, ymax = 100, vals = 1)
-  crs(rtm) <- "EPSG:3857"
-  sa  <- as.polygons(ext(rtm)); crs(sa) <- crs(rtm)
+  rtm <- terra::rast(nrows = 10, ncols = 10, xmin = 0, xmax = 100, ymin = 0, ymax = 100, vals = 1)
+  terra::crs(rtm) <- "EPSG:3857"
+  sa  <- terra::as.polygons(terra::ext(rtm)); terra::crs(sa) <- terra::crs(rtm)
 
-  DT <- data.table(
+  DT <- data.table::data.table(
     dataName       = "Energy",
     dataClass      = "potentialWindTurbines",
     classToSearch  = "E1",
@@ -482,14 +482,14 @@ testthat::test_that("createDisturbanceList: .mif tiles are rasterized by their v
 
   # two tiles, left and right halves of the study area, each with its own value
   tile <- function(x0, x1, value) {
-    v <- vect(matrix(c(x0, 0, x1, 0, x1, 100, x0, 100, x0, 0), byrow = TRUE, ncol = 2),
-              type = "polygons", crs = crs(rtm))
+    v <- terra::vect(matrix(c(x0, 0, x1, 0, x1, 100, x0, 100, x0, 0), byrow = TRUE, ncol = 2),
+              type = "polygons", crs = terra::crs(rtm))
     v$E1_class <- value
     v
   }
   fake_download <- function(url, destfile, ...) {
-    writeVector(tile(0, 50, 10), file.path(dirname(destfile), "tile1.mif"), filetype = "MapInfo File")
-    writeVector(tile(50, 100, 20), file.path(dirname(destfile), "tile2.mif"), filetype = "MapInfo File")
+    terra::writeVector(tile(0, 50, 10), file.path(dirname(destfile), "tile1.mif"), filetype = "MapInfo File")
+    terra::writeVector(tile(50, 100, 20), file.path(dirname(destfile), "tile2.mif"), filetype = "MapInfo File")
     file.create(destfile)
     invisible(0L)
   }
@@ -499,19 +499,19 @@ testthat::test_that("createDisturbanceList: .mif tiles are rasterized by their v
   }
 
   f <- createDisturbanceList
-  stub(f, "as_id", function(x) NA)   # not a Google Drive link
-  stub(f, "download.file", fake_download)
-  stub(f, "unzip", function(...) invisible(NULL))
-  stub(f, "checkPath", fake_checkPath)
+  mockery::stub(f, "as_id", function(x) NA)   # not a Google Drive link
+  mockery::stub(f, "download.file", fake_download)
+  mockery::stub(f, "unzip", function(...) invisible(NULL))
+  mockery::stub(f, "checkPath", fake_checkPath)
 
   out <- suppressMessages(f(DT, dest, sa, "UT", rtm, FALSE))
   lay <- out$Energy$potentialWindTurbines
-  expect_s4_class(lay, "SpatVector")
+  testthat::expect_s4_class(lay, "SpatVector")
 
   # back on the template grid: every cell carries the value of the tile it lies in
-  vals <- values(rasterize(lay, rtm, field = names(lay)[1]), mat = FALSE)
-  colX <- xFromCell(rtm, seq_len(ncell(rtm)))
-  expect_equal(vals[colX < 50], rep(10, sum(colX < 50)))
-  expect_equal(vals[colX > 50], rep(20, sum(colX > 50)))
+  vals <- terra::values(terra::rasterize(lay, rtm, field = names(lay)[1]), mat = FALSE)
+  colX <- terra::xFromCell(rtm, seq_len(terra::ncell(rtm)))
+  testthat::expect_equal(vals[colX < 50], rep(10, sum(colX < 50)))
+  testthat::expect_equal(vals[colX > 50], rep(20, sum(colX > 50)))
 })
 
