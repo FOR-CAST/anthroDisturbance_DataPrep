@@ -22,7 +22,7 @@ defineModule(sim, list(
            email = "achubaty@for-cast.ca")
   ),
   childModules = character(0),
-  version = list(anthroDisturbance_DataPrep = "1.0.0"),
+  version = list(anthroDisturbance_DataPrep = "1.2.1"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
