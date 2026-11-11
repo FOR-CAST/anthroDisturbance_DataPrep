@@ -28,7 +28,7 @@ defineModule(sim, list(
   documentation = list("README.md", "anthroDisturbance_DataPrep.Rmd"), ## same file
   reqdPkgs = list("SpaDES.core (>=2.0.3.9002)", "ggplot2", 
                   "PredictiveEcology/reproducible", "tictoc",
-                  "raster", "terra", "crayon", "stringi", "R.utils"),
+                  "terra", "crayon", "stringi", "R.utils"),
   parameters = rbind(
     #defineParameter("paramName", "paramClass", value, min, max, "parameter description"),
     defineParameter(".plots", "character", "screen", NA, NA,
