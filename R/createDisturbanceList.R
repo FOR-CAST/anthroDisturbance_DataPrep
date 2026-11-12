@@ -74,7 +74,8 @@ createDisturbanceList <- function(DT,
                 # and union takes too long
                 if (NROW(maskedLay) == 0) return(NULL) # For small study areas, one of the tiles might
                 # not intersect
-                rasLay <- terra::rasterize(maskedLay, rasterToMatch,
+                # terra::rast() gives the template's geometry (and converts a RasterLayer)
+                rasLay <- terra::rasterize(maskedLay, terra::rast(rasterToMatch),
                                            field = names(layR)[grepl(names(layR),
                                                                      pattern = CTS)])
                 return(rasLay)

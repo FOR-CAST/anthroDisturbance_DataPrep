@@ -568,3 +568,57 @@ test_that("multiple dataName outputs are isolated", {
   expect_true(all(out$forestry$cutblocks$type=="F"))
   expect_true(all(out$mining$cutblocks$type=="M"))
 })
+
+testthat::test_that("createDisturbanceList: .mif tiles are rasterized by their value field and combined", {
+  testthat::skip_on_cran()
+
+  rtm <- terra::rast(nrows = 10, ncols = 10, xmin = 0, xmax = 100, ymin = 0, ymax = 100, vals = 1)
+  terra::crs(rtm) <- "EPSG:3857"
+  sa  <- terra::as.polygons(terra::ext(rtm)); terra::crs(sa) <- terra::crs(rtm)
+
+  DT <- data.table::data.table(
+    dataName       = "Energy",
+    dataClass      = "potentialWindTurbines",
+    classToSearch  = "E1",
+    fieldToSearch  = "",
+    URL            = "https://example.org/windLayers.zip",
+    fileName       = "windLayers.zip",
+    dataType       = "mif"
+  )
+  dest <- tempfile("dl_mif_"); dir.create(dest, recursive = TRUE)
+
+  # two tiles, left and right halves of the study area, each with its own value
+  tile <- function(x0, x1, value) {
+    v <- terra::vect(matrix(c(x0, 0, x1, 0, x1, 100, x0, 100, x0, 0), byrow = TRUE, ncol = 2),
+              type = "polygons", crs = terra::crs(rtm))
+    v$E1_class <- value
+    v
+  }
+  fake_download <- function(url, destfile, ...) {
+    terra::writeVector(tile(0, 50, 10), file.path(dirname(destfile), "tile1.mif"), filetype = "MapInfo File")
+    terra::writeVector(tile(50, 100, 20), file.path(dirname(destfile), "tile2.mif"), filetype = "MapInfo File")
+    file.create(destfile)
+    invisible(0L)
+  }
+  fake_checkPath <- function(path, create = FALSE) {
+    if (isTRUE(create) && !dir.exists(path)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    normalizePath(path, winslash = "/", mustWork = FALSE)
+  }
+
+  f <- createDisturbanceList
+  mockery::stub(f, "as_id", function(x) NA)   # not a Google Drive link
+  mockery::stub(f, "download.file", fake_download)
+  mockery::stub(f, "unzip", function(...) invisible(NULL))
+  mockery::stub(f, "checkPath", fake_checkPath)
+
+  out <- suppressMessages(f(DT, dest, sa, "UT", rtm, FALSE))
+  lay <- out$Energy$potentialWindTurbines
+  testthat::expect_s4_class(lay, "SpatVector")
+
+  # back on the template grid: every cell carries the value of the tile it lies in
+  vals <- terra::values(terra::rasterize(lay, rtm, field = names(lay)[1]), mat = FALSE)
+  colX <- terra::xFromCell(rtm, seq_len(terra::ncell(rtm)))
+  testthat::expect_equal(vals[colX < 50], rep(10, sum(colX < 50)))
+  testthat::expect_equal(vals[colX > 50], rep(20, sum(colX > 50)))
+})
+

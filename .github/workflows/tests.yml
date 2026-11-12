@@ -78,7 +78,7 @@ jobs:
           cran_packages <- c(
             "covr", "testthat", "withr", "terra", "data.table",
             "sf", "reproducible", "raster", "mockery",
-            "Require", "fasterize", "xml2", "digest", "tictoc",
+            "Require", "xml2", "digest", "tictoc",
             "DT", "htmltools", "htmlwidgets", "BH", "RApiSerialize",
             "Rcpp", "RcppParallel", "stringfish", "stringi",
             "zip", "googledrive", "rlang", "vctrs", "pillar", "purrr", "tibble"
@@ -107,7 +107,7 @@ jobs:
             pkgs <- c(
               "covr", "DT", "htmltools", "htmlwidgets", "testthat",
               "terra", "data.table", "sf", "withr", "reproducible",
-              "raster", "tictoc", "mockery", "Require", "fasterize"
+              "tictoc", "mockery", "Require"
             )
             invisible(lapply(pkgs, library, character.only = TRUE))
           })
