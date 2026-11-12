@@ -84,7 +84,8 @@ checkDisturbanceProportions <- function(DT,
     message(crayon::green(paste0("Total area disturbed for ", layName, " as vector: ", round(bLay$totalAreaKm2, digits = 3), "km2")))
     message(paste0("This represents ", round(100*(bLay$totalAreaKm2/studyAreaTotalArea), 4), "% of total area."))
     if (!file.exists(fullFlnmTIF)){
-    bLayRas <- terra::rasterize(bLay, rasterToMatch)
+    # terra::rast() gives the template's geometry (and converts a RasterLayer)
+    bLayRas <- terra::rasterize(bLay, terra::rast(rasterToMatch))
     names(bLayRas) <- layName
     terra::writeRaster(bLayRas, filename = fullFlnmTIF,
                        filetype = "GTiff", overwrite = TRUE)
